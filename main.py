@@ -21,7 +21,8 @@ class Audio:
 
     def stt(self):
         with sr.Microphone() as source:
-            print("Say something...")
+            print("\033[31mRECORDING..\033[0m")
+            self.recognizer.adjust_for_ambient_noise(source)
             audio = self.recognizer.listen(source)
 
         try:
