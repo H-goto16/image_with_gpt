@@ -1,0 +1,5 @@
+SpeechRecognition
+gTTS
+pygame
+langchain
+python-dotenv
