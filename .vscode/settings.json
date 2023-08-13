@@ -1,0 +1,17 @@
+{
+  "cSpell.words": [
+    "dotenv",
+    "gtts",
+    "Kaldi",
+    "langchain",
+    "llms",
+    "OPENAI",
+    "pyaudio",
+    "pygame",
+    "vosk"
+  ],
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  },
+  "python.formatting.provider": "none"
+}
