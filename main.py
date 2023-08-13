@@ -1,3 +1,20 @@
+import importlib
+
+with open('requirements.txt') as f:
+    required_libraries = [line.strip() for line in f.readlines()]
+
+for library in required_libraries:
+    try:
+        importlib.import_module(library)
+    except ImportError:
+        print(f"{library} is not installed.")
+        try:
+            import pip._internal
+            pip._internal.main(['install', library])
+            print(f"{library} was installed successfully!")
+        except Exception as e:
+            print(f"{library} was not installed. Please install it manually.")
+
 from dotenv import load_dotenv
 import speech_recognition as sr
 from gtts import gTTS
@@ -32,20 +49,6 @@ class Audio:
             pygame.mixer.init()
             load_dotenv()
             print(Fore.GREEN + "Audio module loaded!   ")
-        except ImportError:
-            print(f"\033[31mModule not found. Execute auto pip installing...\033[0m")
-            try:
-                os.system("pip install -r requirements.txt")
-                print(f"\033[Installed Module!\033[0m")
-                self.__init__()
-            except:
-                try:
-                    os.system("pip3 install -r requirements.txt")
-                    print(f"\033[Installed Module!\033[0m")
-                    self.__init__()
-                except:
-                    print(f"\033[Failed to install. Exit program.\033[0m")
-                    exit(1)
         except Exception as e:
             print(f"\033[31mInitialize Error Occurred! {str(e)}\n\n Restart initializing...\033[0m")
             self.__init__()

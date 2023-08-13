@@ -1,19 +1,8 @@
-# audio base
 pygame
 pyaudio
-
-# speech recognition
 SpeechRecognition
 vosk
-
-# text to speech
 gTTS
-
-# llm
 langchain
-
-# env
 python-dotenv
-
-# color print
 colorama
