@@ -9,6 +9,8 @@
 + OpenAIのLangChainを用いて超高精度な文章解析
 
 ## 環境構築
+不要(自動でパッケージインストールされます。)
+
 + パッケージインストール
 ```
 pip install -r requirements.txt

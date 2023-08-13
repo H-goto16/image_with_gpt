@@ -81,14 +81,13 @@ class Audio:
                 result = recognizer.Result()
                 result_dict = json.loads(result)["text"]
                 text += result_dict
-                print(Fore.CYAN + result_dict)
+                print(result)
                 if len(result_dict) > self.min and not self.stt_publish:
                     break
             else:
                 result = recognizer.PartialResult()
                 result_dict = json.loads(result)["partial"]
-                print(Fore.CYAN + result_dict + "\r", end="")
-
+                print(result)
             final = json.loads(recognizer.FinalResult())["text"]
             
             if self.stt_publish:
@@ -125,7 +124,7 @@ class Audio:
             self.vosk()
 
     def tts(self, text):
-        print(Fore.CYAN + "TTS Loading...\r", end="")
+        print(Fore.CYAN + "TTS Loading...                     \r", end="")
         audio_path = "output.mp3"
         tts = gTTS(text=text, lang=self.language)
         tts.save(audio_path)
@@ -152,6 +151,3 @@ class Audio:
         res = self.agent.run(text)
         print(Fore.CYAN + res)
         return res
-    
-audio = Audio()
-audio.vosk()
