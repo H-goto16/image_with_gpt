@@ -8,6 +8,7 @@
     "OPENAI",
     "pyaudio",
     "pygame",
+    "Turtlebot",
     "vosk"
   ],
   "[python]": {
