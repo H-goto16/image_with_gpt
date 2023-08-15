@@ -1,19 +1,30 @@
+### CONFIG ###
+AUTO_PIP = True
+##############
+
+import pkg_resources
 import importlib
 
-with open('requirements.txt') as f:
-    required_libraries = [line.strip() for line in f.readlines()]
+def auto_pip():
+    installed_packages = {package.project_name: package.version for package in pkg_resources.working_set}
 
-for library in required_libraries:
-    try:
-        importlib.import_module(library)
-    except ImportError:
-        print(f"{library} is not installed.")
-        try:
-            import pip._internal
-            pip._internal.main(['install', library])
-            print(f"{library} was installed successfully!")
-        except Exception as e:
-            print(f"{library} was not installed. Please install it manually.")
+    with open('requirements.txt') as f:
+        required_libraries = [line.strip() for line in f.readlines()]
+
+    for library in required_libraries:
+        if library not in installed_packages:
+            print(f"\033[31m{library} is not found from pip list try import {library}.\033[0m")
+            try:
+                importlib.import_module(library)
+            except ImportError:
+                print(f"\033[31m{library} is not installed. install {library}.\033[0m")
+                import pip._internal
+                pip._internal.main(['install', library])
+                print(f"\033[31m{library} was installed successfully!\033[0m")
+            else:
+                print(f"\033[31m{library} is already installed!\033[0m")
+
+if AUTO_PIP: auto_pip()
 
 from dotenv import load_dotenv
 import speech_recognition as sr
@@ -36,6 +47,7 @@ import pygame
 
 class Audio:
     def __init__(self, language="en", stt_publish=False, min=10, max_try=3):
+        error_count = 0
         print("Audio module loading...\r", end="")
         try:
             init(autoreset=True)
@@ -50,10 +62,14 @@ class Audio:
             load_dotenv()
             print(Fore.GREEN + "Audio module loaded!   ")
         except Exception as e:
+            error_count += 1
             print(f"\033[31mInitialize Error Occurred! {str(e)}\n\n Restart initializing...\033[0m")
+            if error_count > self.max_try:
+                raise Exception("Too many errors")
             self.__init__()
 
     def vosk(self):
+        error_count = 0
         print(Fore.GREEN + "VOSK Loading...")
         print(Fore.GREEN + "Opening Microphone...\r", end="")
         try:
@@ -68,8 +84,11 @@ class Audio:
             recognizer = vosk.KaldiRecognizer(self.model, 16000)
             print(Fore.GREEN + "VOSK Loaded! Start Listening...")
         except:
+            error_count += 1
             print(Fore.RED + "Failed to open Microphone!")
-            exit(1)
+            if error_count > self.max_try:
+                raise Exception("Too many errors")
+            self.vosk()
 
         text = ""
 
@@ -124,30 +143,57 @@ class Audio:
             self.vosk()
 
     def tts(self, text):
+        error_count = 0
         print(Fore.CYAN + "TTS Loading...                     \r", end="")
         audio_path = "output.mp3"
-        tts = gTTS(text=text, lang=self.language)
-        tts.save(audio_path)
-        print(Fore.CYAN + "TTS Loaded!\r", end="")
-        pygame.mixer.music.load(audio_path)
-        pygame.mixer.music.play()
-        while pygame.mixer.music.get_busy():
-            print(Fore.GREEN + "Start Playing...\r", end="")
-            continue
+        try:
+            tts = gTTS(text=text, lang=self.language)
+            tts.save(audio_path)
+            print(Fore.CYAN + "TTS Loaded!\r", end="")
+            pygame.mixer.music.load(audio_path)
+            pygame.mixer.music.play()
+            while pygame.mixer.music.get_busy():
+                print(Fore.GREEN + "Start Playing...\r", end="")
+                continue
+        except Exception as e:
+            error_count += 1
+            print(Fore.RED + f"An unknown error occurred: {e}")
+            if error_count > self.max_try:
+                raise Exception("Too many errors")
+            self.tts(text)
         print(Fore.GREEN + "TTS Played! removing audio file...\r", end="")
         os.remove(audio_path)
     
     def llm(self, text, prompt):
-        print(Fore.GREEN + "LLM Loading...")
-        self.llm = OpenAI()
-        self.agent = initialize_agent(
-            tools=[],
-            llm=self.llm, 
-            agent="conversational-react-description", 
-            memory=ConversationBufferMemory(memory_key="chat_history"), 
-        )
-        self.agent.agent.llm_chain.prompt.template = prompt
-        print(Fore.GREEN + "LLM Loaded! Start OpenAI generation...\r", end="")
+        error_count = 0
+        print(Fore.WHITE + "LLM Loading...\r", end="")
+        try:
+            self.llm = OpenAI()
+            self.agent = initialize_agent(
+                tools=[],
+                llm=self.llm, 
+                agent="conversational-react-description", 
+                memory=ConversationBufferMemory(memory_key="chat_history"),
+                agent_kwargs={
+                    "prefix": prompt
+                }
+            )
+        except Exception as e:
+            error_count += 1
+            print(Fore.RED + f"An unknown error occurred: {e}")
+            if error_count > self.max_try:
+                raise Exception("Too many errors")
+            self.llm(text, prompt)
+        print(Fore.GREEN + "LLM Loaded! " + Fore.WHITE + "Start OpenAI generation...\r", end="")
         res = self.agent.run(text)
-        print(Fore.CYAN + res)
+        print(Fore.GREEN + "LLM Generated!                                                    ")
+        print(Fore.GREEN + "LLM Output : " + Fore.MAGENTA + res)
         return res
+    
+
+# Example
+# audio = Audio(language="ja")
+# audio.tts("こんにちは")
+# res = audio.stt()
+#                 # プロンプト                          # システムプロンプト
+# res = audio.tts("タートボットさん、白色の紙袋を選びます","あなたは文章解析を行うAIです。入力された文字列の中から指定された紙袋の色を抽出し、その色のみを「必ず」配列で返してください。注意: 赤色ではなく赤という感じで色までは必要ありません。 例: 「Turtlebotさん、赤色の紙袋を選択します．」 -> [\"赤\"], 「Turtlebotさん、赤色の紙袋と青色の紙袋を選択します．」 -> [\"赤\", \"青\"], 「Turtlebotさん、赤色の紙袋と青色の紙袋と黄色の紙袋を選択します．」 -> [\"赤\", \"青\", \"黄\"]")
