@@ -1,4 +1,5 @@
 # Online Audio Kit
+シンプルな音声キット
 
 **注意：インターネット環境が必要です。**
 
@@ -8,34 +9,33 @@
 + 言語指定可能
 + OpenAIのLangChainを用いて超高精度な文章解析
 
-## 環境構築
-不要(自動でパッケージインストールされます。)
+# インストール
+```shell
+pip install git+https://github.com/rionehome/online_audio_kit
+```
 
-+ パッケージインストール
+# 使用方法
+```python
+from online_audio_kit import AudioKit
+audio = AudioKit() # Option : AudioKit(language=str, stt_publish=bool, min=int, max_try=int, open_api_key=str) 
+
+recognized_text = audio.stt()
+audio.tts("Hello!")
+llm_response = audio.llm("I like orange juice.", "You are analyze AI. You must .....")
+
+# Testing now
+audio.vosk()
 ```
-pip install -r requirements.txt
-```
+
+# 環境構築
 + .envファイルの入力
 OpenAIから発行したAPIキーを入力
 ```sh:.env
 OPENAI_API_KEY="xxxxxxxxxxxxxx" // 変更
 ```
-## 使用方法
-
-```python:example.py
-from path.to.main import Audio
-
-# インスタンス作成
-audio = Audio()
-# 文字起こし
-text = audio.stt()
-# 発話
-audio.tts("発話させる文章")
-# LLM解析
-res = audio.llm("解析したい文章", "システムプロンプト")
-```
-
-以下のようにすることで言語を指定できます。
++ .envを使用しない場合
+インスタンスを生成するときに指定できます。
 ```python
-audio = Audio(language="ja")
+audio = Audio(openai_api_key="YOUR API KEY")
 ```
+
