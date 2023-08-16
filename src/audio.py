@@ -1,31 +1,3 @@
-### CONFIG ###
-AUTO_PIP = True
-##############
-
-import pkg_resources
-import importlib
-
-def auto_pip():
-    installed_packages = {package.project_name: package.version for package in pkg_resources.working_set}
-
-    with open('requirements.txt') as f:
-        required_libraries = [line.strip() for line in f.readlines()]
-
-    for library in required_libraries:
-        if library not in installed_packages:
-            print(f"\033[31m{library} is not found from pip list try import {library}.\033[0m")
-            try:
-                importlib.import_module(library)
-            except ImportError:
-                print(f"\033[31m{library} is not installed. install {library}.\033[0m")
-                import pip._internal
-                pip._internal.main(['install', library])
-                print(f"\033[31m{library} was installed successfully!\033[0m")
-            else:
-                print(f"\033[31m{library} is already installed!\033[0m")
-
-if AUTO_PIP: auto_pip()
-
 from dotenv import load_dotenv
 import speech_recognition as sr
 from gtts import gTTS
@@ -38,15 +10,11 @@ from colorama import Fore, Back
 import vosk
 import pyaudio
 import json
-from os import environ
-environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1" 
+os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1" 
 import pygame
 
-# Manual set API key, if you don't want to use .env file
-# os.environ["OPENAI_API_KEY"] = ""
-
-class Audio:
-    def __init__(self, language="en", stt_publish=False, min=10, max_try=3):
+class AudioKit:
+    def __init__(self, language="en", stt_publish=False, min=10, max_try=3, openai_api_key=None):
         error_count = 0
         print("Audio module loading...\r", end="")
         try:
@@ -59,6 +27,8 @@ class Audio:
             vosk.SetLogLevel(-1)
             self.model = vosk.Model(lang=self.language)
             pygame.mixer.init()
+            if openai_api_key:
+                os.environ["OPENAI_API_KEY"] = openai_api_key
             load_dotenv()
             print(Fore.GREEN + "Audio module loaded!   ")
         except Exception as e:
@@ -189,11 +159,3 @@ class Audio:
         print(Fore.GREEN + "LLM Generated!                                                    ")
         print(Fore.GREEN + "LLM Output : " + Fore.MAGENTA + res)
         return res
-    
-
-# Example
-# audio = Audio(language="ja")
-# audio.tts("こんにちは")
-# res = audio.stt()
-#                 # プロンプト                          # システムプロンプト
-# res = audio.tts("タートボットさん、白色の紙袋を選びます","あなたは文章解析を行うAIです。入力された文字列の中から指定された紙袋の色を抽出し、その色のみを「必ず」配列で返してください。注意: 赤色ではなく赤という感じで色までは必要ありません。 例: 「Turtlebotさん、赤色の紙袋を選択します．」 -> [\"赤\"], 「Turtlebotさん、赤色の紙袋と青色の紙袋を選択します．」 -> [\"赤\", \"青\"], 「Turtlebotさん、赤色の紙袋と青色の紙袋と黄色の紙袋を選択します．」 -> [\"赤\", \"青\", \"黄\"]")
