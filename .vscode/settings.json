@@ -1,13 +1,17 @@
 {
   "cSpell.words": [
     "dotenv",
+    "dtype",
     "gtts",
+    "indata",
     "Kaldi",
     "langchain",
     "llms",
     "OPENAI",
     "pyaudio",
     "pygame",
+    "samplerate",
+    "sounddevice",
     "Turtlebot",
     "vosk"
   ],
