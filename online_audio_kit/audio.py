@@ -71,7 +71,7 @@ class AudioKit:
 
         使用方法:
         ```python
-        audio = online_audio_kit()
+        audio = AudioKit()
         for result in audio.vosk():
             print(result)
         ```
@@ -219,7 +219,7 @@ class AudioKit:
 
         使用方法:
         ```python   
-        audio = online_audio_kit()
+        audio = AudioKit()
         res = audio.llm("Hello, my name is John.", "You are a very high-performance voice analysis AI. Extract only the food from the input text.")
         print(res)
         ```
