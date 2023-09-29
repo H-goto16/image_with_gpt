@@ -11,8 +11,6 @@ with open("LICENSE", "r", encoding="utf-8") as fh:
 with open("requirements.txt", "r", encoding="utf-8") as req_file:
     requirements = req_file.read().splitlines()
 
-
-
 setup(
     name='online_audio_kit',
     version=VERSION,
