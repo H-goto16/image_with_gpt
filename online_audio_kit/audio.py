@@ -16,15 +16,20 @@ from json import loads
 from vosk import Model, KaldiRecognizer, SetLogLevel
 os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1" 
 import pygame
-
 class AudioKit:
     """
     # Online Audio Kit
     音声エンジンを提供するクラスです。\n
     このクラスをインスタンス化することで、音声認識や音声合成、文章解析を行うことができます。\n
 
+    #### 注意: OpenAIのKeyは.envに記述するか、インスタンス化時にopenai_api_key引数に渡してください。
+    `.env`例
+    ```.env
+    OPENAI_API_KEY="xxxxxxxxxxxxxxxxxxx"
+    ```
+
     + 引数:\n
-    language (str): 音声認識や音声合成に使用する言語を指定します。デフォルトは"en"です。\n
+    language (Literal["ja", "en"]): 音声認識や音声合成に使用する言語を指定します。デフォルトは"en"です。"en"はVOSKではen-usに変換されます。ただしGoogleのAPIへは"en"で渡します。\n
     openai_api_key (str): OpenAI APIキーを指定します。デフォルトはNoneです。\n
 
     + クラス変数:\n
@@ -39,15 +44,16 @@ class AudioKit:
     
     @retry(exceptions=Exception, tries=MAX_TRY, delay=DELAY, backoff=BACKOFF)
     def __init__(self, language="en", openai_api_key=None):
-        print("Audio module loading...\r", end="")
+        model_name = "en-us" if language == "en" else language
+        print("Audio module loading... ("+ model_name +")\r", end="")
         try:
+            
             init(autoreset=True)
             self.recognizer = sr.Recognizer()
             self.language = language
             SetLogLevel(-1)
-            self.model = Model(lang=self.language)
+            self.model = Model(lang=model_name)
             pygame.mixer.init()
-
             if openai_api_key:
                 os.environ["OPENAI_API_KEY"] = openai_api_key
             load_dotenv()
@@ -55,7 +61,7 @@ class AudioKit:
             print(f"\033[31mInitialize Error Occurred! {str(e)}\nRestart initializing...\033[0m")
             raise Exception(f"An unknown error occurred: {e}")
         else:
-            print(Fore.GREEN + "Audio module loaded!   ")
+            print(Fore.GREEN + "Audio module loaded! ("+ model_name +")" + " " * 20 )
 
     @retry(exceptions=Exception, tries=MAX_TRY, delay=DELAY, backoff=BACKOFF)
     def vosk(self):
@@ -76,15 +82,8 @@ class AudioKit:
             print(result)
         ```
         """
-        print(Fore.CYAN + "VOSK Preparing...\r", end="")
+        print(Fore.CYAN + "VOSK Preparing...("+ self.language +")\r", end="")
         q = queue.Queue()
-
-        def int_or_str(text):
-            """Helper function for argument parsing."""
-            try:
-                return int(text)
-            except ValueError:
-                return text
 
         def callback(indata, frames, time, status):
             """This is called (from a separate thread) for each audio block."""
@@ -92,45 +91,15 @@ class AudioKit:
                 print(status, file=sys.stderr)
             q.put(bytes(indata))
 
-        parser = argparse.ArgumentParser(add_help=False)
-        parser.add_argument(
-            "-l", "--list-devices", action="store_true",
-            help="show list of audio devices and exit")
-        args, remaining = parser.parse_known_args()
-        if args.list_devices:
-            print(sd.query_devices())
-            parser.exit(0)
-        parser = argparse.ArgumentParser(
-            description=__doc__,
-            formatter_class=argparse.RawDescriptionHelpFormatter,
-            parents=[parser])
-        parser.add_argument(
-            "-f", "--filename", type=str, metavar="FILENAME",
-            help="audio file to store recording to")
-        parser.add_argument(
-            "-d", "--device", type=int_or_str,
-            help="input device (numeric ID or substring)")
-        parser.add_argument(
-            "-r", "--samplerate", type=int, help="sampling rate")
-        parser.add_argument(
-            "-m", "--model", type=str, help="language model; e.g. en-us, fr, nl; default is en-us")
-        args = parser.parse_args(remaining)
-
         try:
-            if args.samplerate is None:
-                device_info = sd.query_devices(args.device, "input")
-                args.samplerate = int(device_info["default_samplerate"])
+            device_info = sd.query_devices(None, "input")
+            samplerate = int(device_info["default_samplerate"])
                 
-            if args.model is None:
-                model = self.model
-            else:
-                model = Model(lang=args.model)
-
-            with sd.RawInputStream(samplerate=args.samplerate, blocksize = 8000, device=args.device,
+            with sd.RawInputStream(samplerate=samplerate, blocksize = 8000,
                     dtype="int16", channels=1, callback=callback):
 
                 print(Fore.GREEN + "VOSK Loaded! Start VOSK recognition...")
-                rec = KaldiRecognizer(model, args.samplerate)
+                rec = KaldiRecognizer(self.model, samplerate)
                 while True:
                     data = q.get()
                     if rec.AcceptWaveform(data):
