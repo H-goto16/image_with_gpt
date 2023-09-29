@@ -8,7 +8,6 @@ from langchain.chains.conversation.memory import ConversationBufferMemory
 from colorama import init
 from retry import retry
 from colorama import Fore, Back
-import argparse
 import queue
 import sys
 import sounddevice as sd
