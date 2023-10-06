@@ -10,9 +10,19 @@
 + 言語指定可能
 + OpenAIのLangChainを用いて高精度な文章解析
 
+# 環境構築
+```shell:ubuntu
+sudo apt install portaudio19-dev
+```
+
 # インストール
 ```shell
 pip install git+https://github.com/rionehome/online_audio_kit
+```
+
+## パッケージの更新
+```shell
+pip install -U git+https://github.com/rionehome/online_audio_kit
 ```
 
 # 使用方法
