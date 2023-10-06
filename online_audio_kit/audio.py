@@ -105,8 +105,7 @@ class AudioKit:
                     if rec.AcceptWaveform(data):
                         final = loads(rec.Result())["text"]
                         print(Fore.GREEN + "Recognized: " + Fore.WHITE + final)
-                        if len(final) > self.min:
-                            yield final
+                        yield final
                     else:
                         partial = loads(rec.PartialResult())["partial"]
                         print(Fore.CYAN + "Partial:    " + Fore.WHITE + partial)
