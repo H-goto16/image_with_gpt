@@ -14,7 +14,6 @@
 ```shell:ubuntu
 sudo apt install portaudio19-dev
 ```
-
 # インストール
 ```shell
 pip install git+https://github.com/rionehome/online_audio_kit
