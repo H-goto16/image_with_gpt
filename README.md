@@ -1,4 +1,5 @@
 # Online Audio Kit
+**Version 1.0.2**
 シンプルな音声キット
 
 **注意：インターネット環境が必要です。またAIを使用する場合はOpenAIのKeyの設定を必ず行って下さい。**
@@ -11,6 +12,7 @@
 + OpenAIのLangChainを用いて高精度な文章解析
 
 # 環境構築
+Debian系ではPyAudioの使用に以下のライブラリが必要です。
 ```shell:ubuntu
 sudo apt install portaudio19-dev
 ```
