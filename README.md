@@ -1,5 +1,5 @@
 # Online Audio Kit
-**Version 1.0.2**
+**Version 1.0.3**
 
 シンプルな音声キット
 
@@ -31,13 +31,18 @@ pip install -U git+https://github.com/rionehome/online_audio_kit
 ```python
 from online_audio_kit import AudioKit
 
-audio = AudioKit() # Option : AudioKit(language= 'ja' | 'en', openai_api_key=str) 
+audio = AudioKit() # Option : AudioKit(language= 'ja' | 'en', openai_api_key=str)
 
 # Google SpeechRecognitionで音声認識
 recognized_text = audio.stt()
 
-# gTTSで文章発話 第1引数: 発話文書(str)
+# gTTSで文章発話 第1引数: 発話文書(str) 第2引数: モード= "default" | "gen" ,第3引数: 音声ファイルのパス (output.mp3)
 audio.tts("Hello! What drink do you like?")
+
+# audio.tts("Hello What drink do you like?", mode="gen", path="AskDrink.mp3")
+
+# 音声ファイルの再生
+audio.play("AskDrink.mp3")
 
 # OpenAIで文章解析 第1引数: AIへの入力文章(str), 第2引数: AIへのシステムプロンプト(str)
 llm_response = audio.llm("I like orange juice.", "You are an analytical AI.  Extract only your favorite drinks from the input text and output the names of the drinks as an array. Example, Human: I like orange juice but I don't like coffee. You: ['orange juice'], Human: My favorite drink is grape juice and apple juice. You: ['grape juice','apple juice']")

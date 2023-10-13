@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-VERSION = '1.0.2'
+VERSION = '1.0.3'
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
@@ -16,7 +16,7 @@ setup(
     version=VERSION,
     author='Haruki Goto',
     author_email='h.goto.engineer@gmail.com',
-    description='simple audio kit.',  
+    description='simple audio kit.',
     long_description=long_description,
     long_description_content_type="text/markdown",
     license=license,

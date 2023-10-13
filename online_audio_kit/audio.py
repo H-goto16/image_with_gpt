@@ -13,7 +13,7 @@ import sys
 import sounddevice as sd
 from json import loads
 from vosk import Model, KaldiRecognizer, SetLogLevel
-os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1" 
+os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 import pygame
 
 class AudioKit:
@@ -41,27 +41,29 @@ class AudioKit:
     MAX_TRY = 3
     DELAY = 1
     BACKOFF = 2
-    
+
     @retry(exceptions=Exception, tries=MAX_TRY, delay=DELAY, backoff=BACKOFF)
     def __init__(self, language="en", openai_api_key=None):
         model_name = "en-us" if language == "en" else language
         print("Audio module loading... ("+ model_name +")\r", end="")
         try:
-            
             init(autoreset=True)
             self.recognizer = sr.Recognizer()
             self.language = language
+            self.openai_api_key = openai_api_key
             SetLogLevel(-1)
             self.model = Model(lang=model_name)
             pygame.mixer.init()
-            if openai_api_key:
-                os.environ["OPENAI_API_KEY"] = openai_api_key
+            if self.openai_api_key:
+                os.environ["OPENAI_API_KEY"] = self.openai_api_key
             load_dotenv()
         except Exception as e:
             print(f"\033[31mInitialize Error Occurred! {str(e)}\nRestart initializing...\033[0m")
             raise Exception(f"An unknown error occurred: {e}")
         else:
             print(Fore.GREEN + "Audio module loaded! ("+ model_name +")" + " " * 20 )
+            if not self.openai_api_key:
+                print(Fore.YELLOW + "OpenAI API Key is not set. Please set OPENAI_API_KEY in .env or pass it to the constructor.\nYou can't use LLM function.")
 
     @retry(exceptions=Exception, tries=MAX_TRY, delay=DELAY, backoff=BACKOFF)
     def vosk(self):
@@ -94,7 +96,7 @@ class AudioKit:
         try:
             device_info = sd.query_devices(None, "input")
             samplerate = int(device_info["default_samplerate"])
-                
+
             with sd.RawInputStream(samplerate=samplerate, blocksize = 8000,
                     dtype="int16", channels=1, callback=callback):
 
@@ -113,7 +115,7 @@ class AudioKit:
 
         except Exception as e:
             raise Exception(f"An unknown error occurred: {e}")
-    
+
     @retry(exceptions=Exception, tries=MAX_TRY, delay=DELAY, backoff=BACKOFF)
     def stt(self):
         """
@@ -146,32 +148,46 @@ class AudioKit:
             raise Exception(f"An unknown error occurred: {e}")
 
     @retry(exceptions=Exception, tries=MAX_TRY, delay=DELAY, backoff=BACKOFF)
-    def tts(self, text):
+    def play(self, audio_path):
+        """
+        音声ファイルを再生するメソッド\n
+
+        引数:
+            audio_path (str): 再生する音声ファイルのパス
+        return:
+            None
+        """
+        pygame.mixer.music.load(audio_path)
+        pygame.mixer.music.play()
+        while pygame.mixer.music.get_busy():
+            print(Fore.GREEN + "Start Playing...\r", end="")
+            continue
+
+    @retry(exceptions=Exception, tries=MAX_TRY, delay=DELAY, backoff=BACKOFF)
+    def tts(self, text, mode = "default", path = "output.mp3"):
         """
         GoogleのTTSを使用して音声合成を行うメソッド\n
         生成された音声を再生します。\n
-        
+
         引数:
             text (str): 合成する文章
+            mode (str): モード (default: 生成->再生->削除, gen: 生成のみ)
         return:
             None
         """
         print(Fore.CYAN + "TTS Loading...                     \r", end="")
-        audio_path = "output.mp3"
         try:
             tts = gTTS(text=text, lang=self.language)
-            tts.save(audio_path)
+            tts.save(path)
             print(Fore.CYAN + "TTS Loaded!\r", end="")
-            pygame.mixer.music.load(audio_path)
-            pygame.mixer.music.play()
-            while pygame.mixer.music.get_busy():
-                print(Fore.GREEN + "Start Playing...\r", end="")
-                continue
+            if (mode == "default"):
+                self.play(path)
         except Exception as e:
             print(Fore.RED + f"An unknown error occurred: {e}")
             raise Exception(f"An unknown error occurred: {e}")
-        print(Fore.GREEN + "TTS Played! removing audio file...\r", end="")
-        os.remove(audio_path)
+        if (mode == "default"):
+            print(Fore.GREEN + "TTS Played! removing audio file...\r", end="")
+            os.remove(path)
 
     @retry(exceptions=Exception, tries=MAX_TRY, delay=DELAY, backoff=BACKOFF)
     def llm(self, text, prompt):
@@ -183,23 +199,25 @@ class AudioKit:
             text (str): 解析する文章
             prompt (str): 解析に使用するprompt
         return:
-            str: 解析結果
+            str | int: 解析結果 or Errorのとき1を返す
 
         使用方法:
-        ```python   
+        ```python
         audio = AudioKit()
         res = audio.llm("Hello, my name is John.", "You are a very high-performance voice analysis AI. Extract only the food from the input text.")
         print(res)
         ```
         """
         print(Fore.WHITE + "LLM Loading...\r", end="")
+        if not self.openai_api_key:
+            print(Fore.RED + "API KEY DOES NOT EXITS. EXITING...")
+            return 1
         try:
             self.llm = OpenAI()
             self.agent = initialize_agent(
                 tools=[],
-                llm=self.llm, 
-                agent="conversational-react-description", 
-                memory=ConversationBufferMemory(memory_key="chat_history"),
+                llm=self.llm,
+                agent="conversational-react-description",
                 agent_kwargs={
                     "prefix": prompt
                 }
@@ -208,7 +226,7 @@ class AudioKit:
             res = self.agent.run(text)
         except Exception as e:
             print(Fore.RED + f"An unknown error occurred: {e}")
-            raise Exception("An unknown error occurred: {e}")
+            raise Exception(f"An unknown error occurred: {e}")
         print(Fore.GREEN + "LLM Generated!                                                    ")
         print(Fore.GREEN + "LLM Output : " + Fore.MAGENTA + res)
         return res

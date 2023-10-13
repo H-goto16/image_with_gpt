@@ -4,6 +4,7 @@ SpeechRecognition
 vosk
 gTTS
 langchain==0.0.142
+openai
 python-dotenv
 colorama
 retry
