@@ -57,9 +57,9 @@ class AudioKit:
             self.openai_api_key = openai_api_key
             SetLogLevel(-1)
             if vosk_model_path:
-                self.model = Model(model_name=vosk_model_path)
+                self.model = Model(model_path=vosk_model_path)
             elif vosk_model_name:
-                self.model = Model(model_path=vosk_model_name)
+                self.model = Model(model_name=vosk_model_name)
             else:
                 self.model = Model(lang=model_name)
             pygame.mixer.init()
