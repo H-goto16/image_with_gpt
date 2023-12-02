@@ -31,6 +31,10 @@ class AudioKit:
     + 引数:\n
     language (Literal["ja", "en"]): 音声認識や音声合成に使用する言語を指定します。デフォルトは"en"です。"en"はVOSKではen-usに変換されます。ただしGoogleのAPIへは"en"で渡します。\n
     openai_api_key (str): OpenAI APIキーを指定します。デフォルトはNoneです。\n
+    vosk_model_name (str): VOSKのモデルを名前で指定します。公式サイトのモデルを参照できます。デフォルトはNoneです。\n
+    vosk_model_path (str): VOSKのモデルをパスで指定します。デフォルトはNoneです。\n
+
+    vosk_model_nameとvosk_model_pathが両方とも指定された場合、vosk_model_pathが優先されます。\n
 
     + クラス変数:\n
     MAX_TRY (int): エラーが発生した際にリトライする最大回数を指定します。デフォルトは3です。\n
