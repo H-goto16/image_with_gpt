@@ -43,7 +43,7 @@ class AudioKit:
     BACKOFF = 2
 
     @retry(exceptions=Exception, tries=MAX_TRY, delay=DELAY, backoff=BACKOFF)
-    def __init__(self, language="en", openai_api_key=None):
+    def __init__(self, language="en", openai_api_key=None, vosk_model_name=None, vosk_model_path=None):
         model_name = "en-us" if language == "en" else language
         print("Audio module loading... ("+ model_name +")\r", end="")
         try:
@@ -52,7 +52,12 @@ class AudioKit:
             self.language = language
             self.openai_api_key = openai_api_key
             SetLogLevel(-1)
-            self.model = Model(lang=model_name)
+            if vosk_model_path:
+                self.model = Model(model_name=vosk_model_path)
+            elif vosk_model_name:
+                self.model = Model(model_path=vosk_model_name)
+            else:
+                self.model = Model(lang=model_name)
             pygame.mixer.init()
             if self.openai_api_key:
                 os.environ["OPENAI_API_KEY"] = self.openai_api_key
