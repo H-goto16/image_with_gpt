@@ -1,5 +1,5 @@
 # Online Audio Kit
-**Version 1.0.3**
+**Version 1.0.4**
 
 シンプルな音声キット
 
@@ -31,7 +31,7 @@ pip install -U git+https://github.com/rionehome/online_audio_kit
 ```python
 from online_audio_kit import AudioKit
 
-audio = AudioKit() # Option : AudioKit(language= 'ja' | 'en', openai_api_key=str)
+audio = AudioKit() # Option : AudioKit(language= 'ja' | 'en', openai_api_key=str, vosk_model_name=str | None, vosk_model_path=str | None)
 
 # Google SpeechRecognitionで音声認識
 recognized_text = audio.stt()
