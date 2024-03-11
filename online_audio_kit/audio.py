@@ -4,7 +4,8 @@ from gtts import gTTS
 import os
 from langchain.llms import OpenAI
 from langchain.agents import initialize_agent
-from langchain.chains.conversation.memory import ConversationBufferMemory
+from g4f.client import Client
+import g4f
 from colorama import init
 from retry import retry
 from colorama import Fore, Back
@@ -55,6 +56,7 @@ class AudioKit:
             self.recognizer = sr.Recognizer()
             self.language = language
             self.openai_api_key = openai_api_key
+            self.client = Client()
             SetLogLevel(-1)
             if vosk_model_path:
                 self.model = Model(model_path=vosk_model_path)
@@ -239,3 +241,33 @@ class AudioKit:
         print(Fore.GREEN + "LLM Generated!                                                    ")
         print(Fore.GREEN + "LLM Output : " + Fore.MAGENTA + res)
         return res
+
+    @retry(exceptions=Exception, tries=MAX_TRY, delay=DELAY, backoff=BACKOFF)
+    def gpt4free(self, prompt):
+        """
+        gpt4freeを使用して文章解析を行うメソッド\n
+
+        引数:
+            prompt (str): プロンプト
+        return:
+            str | int: 解析結果 or Errorのとき1を返す
+
+        使用方法:
+        ```python
+        audio = AudioKit()
+        res = audio.gpt4free("YOUR PROMPT")
+        ```
+        """
+        try:
+            print(Fore.WHITE + "GPT4FREE Loading...\r", end="")
+            response = self.client.chat.completions.create(
+                    model="gpt-3.5-turbo",
+                    messages=[{"role": "user", "content": prompt }],
+                )
+        except Exception as e:
+            print(Fore.RED + f"An unknown error occurred: {e}")
+            raise Exception(f"An unknown error occurred: {e}")
+        text = response.choices[0].message.content
+        print(Fore.GREEN + "gpt4free Generated!                                                    ")
+        print(Fore.GREEN + "gpt4free Output : " + Fore.MAGENTA + text)
+        return text
