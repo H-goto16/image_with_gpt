@@ -16,5 +16,5 @@ class imageWithGPT:
             messages=[{"role": "user", "content": prompt}],
             image=image,
         )
-        return res.choices[0].message.context
+        return res.choices[0].message.content
 
