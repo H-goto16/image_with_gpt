@@ -2,7 +2,7 @@ from image_with_gpt import imageWithGPT
 from PIL import Image
 
 client = imageWithGPT(
-  # api_key=""
+  api_key=""
 )
 res = client.get(
   image=Image.open("./hamada.jpg"),
