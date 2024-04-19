@@ -1,6 +1,11 @@
 # image with gpt
 
 + usage
+
+install
+```sh
+pip install git+https://github.com/rionehome/image_with_gpt
+```
 ```
 pip install -r requirements.txt
 ```
