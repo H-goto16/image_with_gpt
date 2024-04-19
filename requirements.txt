@@ -1,12 +1,1 @@
-pygame
-pyaudio
-SpeechRecognition
-vosk
-gTTS
-langchain==0.0.142
-openai
-python-dotenv
-colorama
-retry
-sounddevice
-gpt4free
+g4f

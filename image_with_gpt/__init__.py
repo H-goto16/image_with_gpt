@@ -1,1 +1,1 @@
-from image_with_gpt.audio import *
+from image_with_gpt.main import *
